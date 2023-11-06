@@ -85,7 +85,7 @@ class GoogleDriveClient:
         while not done:
             status, done = downloader_instance.next_chunk()
             if status:
-                self.logger.info(f"Download {int(status.progress() * 100)}%.")
+                self.logger.info(f"\033[95mDownload {int(status.progress() * 100)}%.\033[0m")
         return status
 
     def fetch_file_from_google_workspace(

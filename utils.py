@@ -87,17 +87,12 @@ def _load_dataframe_from_file(
         ValueError: If an error occurs during the dataset extraction process.
 
     """
-    logger = setup_logger()
-    logger.info(f"Converting file to Pandas DataFrame...")
     try:
         df: pd.DataFrame = read_func(filepath, **kwargs)
-        logger.info(f"Returning Pandas DataFrame with shape {df.shape}")
         return df
     except ValueError as value_error:
-        logger.error(value_error)
         raise value_error
     except AttributeError as attribute_error:
-        logger.error(attribute_error)
         raise attribute_error
 
 
@@ -117,8 +112,7 @@ def extract_dataframe_from_zip(
         member_name: Name of the file to be extracted from the
                 zip archive and converted to a Pandas DataFrame.
         Extension of the file to be extracted from the zip archive.
-                e.g. csv, xlsx.
-        -csv        -xlsx
+                e.g., csv, xlsx.
         **kwargs: Additional arguments to be passed to the
         pd.read_csv or pd.read_excel functions.
         for more information see:
@@ -132,10 +126,8 @@ def extract_dataframe_from_zip(
         FileNotFoundError: If the file to be extracted is not
         found in the zip archive.
     """
-    logger = setup_logger()
     with zipfile.ZipFile(source_zip_path) as zip_folder:
         if member_name not in zip_folder.namelist():
-            logger.error(f"File {member_name} not found in zip archive.")
             raise FileNotFoundError(f"File {member_name} not found in zip archive.")
 
         with zip_folder.open(member_name) as file:
@@ -147,7 +139,6 @@ def extract_dataframe_from_zip(
                 **kwargs,
             )
         except zipfile.BadZipFile as bad_zip_file_error:
-            logger.error(f"Bad zip file: {bad_zip_file_error}")
             raise bad_zip_file_error
 
 
@@ -226,8 +217,6 @@ def standardize_columns(df_: pd.DataFrame) -> pd.DataFrame:
 
 
 # add hash to files
-
-
 def read_file_chunks(file_path: Path) -> bytes:
     """
     Read a file and yield its content in chunks
@@ -277,7 +266,3 @@ def create_hash_file(directory_path: str, file_pattern: str) -> None:
             file_content_gen = read_file_chunks(file)
             computed_hash = compute_hash(file_content_gen)
             hash_output.write(f"{file.name} {computed_hash}\n")
-
-
-if __name__ == "__main__":
-    get_specific_sql_script(1)

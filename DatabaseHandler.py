@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 import logging
 from contextlib import contextmanager
-from typing import Optional
 
 import pandas as pd
 from sqlalchemy import Engine, text, Delete, Select
@@ -108,7 +107,7 @@ class DatabaseHandler:
         self, table_name: str, *dataframes: pd.DataFrame, **kwargs
     ) -> None:
         """
-        Write dataframe to database.
+        Write dataframe to a database.
         :param table_name: Table name to operate on.
         :param dataframes: Dataframes to write to the database.
         :param kwargs: Additional arguments. Passed to pandas to_sql method.
