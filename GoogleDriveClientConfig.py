@@ -13,9 +13,13 @@ class GoogleDriveClientConfig:
     - The `GoogleDriveCLienteConfig` class is manager for the configuration
     file of the GoogleDriveClient class
     - The class requires a `token_file_path`, a `credential_file_path` parameters
-    wich should be Path objects and `logger` parameter.
-    - The `get_credent
-
+    which should be Path objects and `logger` parameter.
+    - The `retrieve_credentials` method retrieves the credentials from the token file.
+    - The `_credentials_expired` method checks if the credentials are expired.
+    - The `_refresh_credentials` method refreshes the credentials.
+    - The `update_token_file` method updates the token file with the new credentials.
+    - The `get_credentials` method gets the credentials from the token file or gets new ones.
+    - The `get_credentials_from_flow` method gets the credentials from the flow.
     """
 
     def __init__(
@@ -41,8 +45,8 @@ class GoogleDriveClientConfig:
             f"scope={self.scope}"
         )
 
-    def get_credentials_from_token_from_file(self) -> Credentials:
-        """Gets the credentials from the token file or get new ones"""
+    def retrieve_credentials(self) -> Credentials:
+        """Gets the credentials from the token file."""
         if self.token_file_path.exists():
             return Credentials.from_authorized_user_file(
                 str(self.token_file_path), self.scope
@@ -65,13 +69,15 @@ class GoogleDriveClientConfig:
 
     def get_credentials(self) -> Credentials:
         """Gets the credentials from the token file or get new ones"""
-        creds: Credentials = self.get_credentials_from_token_from_file()
-        if not creds or not creds.valid:
-            if self._credentials_expired(creds):
-                self._refresh_credentials(creds)
-        else:
-            creds = self.get_credentials_from_flow()
-        return creds
+        creds = self.retrieve_credentials()
+
+        if creds and creds.valid():
+            return creds
+
+        if creds and self._credentials_expired(creds):
+            self._refresh_credentials(creds)
+
+        return self.get_credentials_from_flow()
 
     def get_credentials_from_flow(self) -> Credentials:
         """Gets the credentials from the flow"""
