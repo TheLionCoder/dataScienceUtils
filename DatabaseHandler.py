@@ -31,8 +31,7 @@ class DatabaseHandler:
 
     """
 
-    def __init__(self, db_engine: Engine, schema: str,
-                 logger: logging.Logger) -> None:
+    def __init__(self, db_engine: Engine, schema: str, logger: logging.Logger) -> None:
         """
         Constructor for DatabaseHandler class.
         :param db_engine: SQLAlchemy engine object.
@@ -48,7 +47,6 @@ class DatabaseHandler:
 
     def __str__(self):
         return f"DatabaseHandler(" f"db_engine={self.db_engine}, schema={self.schema})"
-
 
     @contextmanager
     def _manage_session(self):
