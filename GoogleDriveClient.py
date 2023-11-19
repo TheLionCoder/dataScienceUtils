@@ -62,6 +62,7 @@ class GoogleDriveClient:
         """Make a file writer
         :param download_dir: The directory to download the file to.
         :param file_name: The name of the file to download.
+        :return: A file object to write to the downloaded file.
         """
         download_path: Path = download_dir / file_name
         return io.FileIO(download_path, mode="wb")
@@ -73,13 +74,16 @@ class GoogleDriveClient:
         """Make a download request
         :param file_writer: A file object to write to the downloaded file.
         :param export_request: A dictionary containing the file.
+        :return: A MediaIoBaseDownload object.
         """
         return MediaIoBaseDownload(file_writer, export_request)
 
     def track_download_progress(self, downloader_instance: MediaIoBaseDownload
                                 ) -> MediaIoBaseDownload:
         """Check file download status
-        :param downloader_instance: A MediaIoBaseDownload object."""
+        :param downloader_instance: A MediaIoBaseDownload object.
+        :return: The status of the download.
+        """
         done: bool = False
         status = None
         while not done:
@@ -131,6 +135,7 @@ class GoogleDriveClient:
         """Reads a Google Sheet and returns the data
         :param file_sheet_url: The url of the Google Sheet to read.
         :param sheet_range: The range of the Google Sheet to read.
+        :return The data from the Google Sheet.
         """
         file_sheet_id: str = GoogleDriveClient.__retrieve_file_id(file_sheet_url)
         # Call the Sheets API

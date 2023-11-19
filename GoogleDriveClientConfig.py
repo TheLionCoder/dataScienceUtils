@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from pathlib import Path
 from typing import Optional
 
@@ -10,7 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 class GoogleDriveClientConfig:
     """
-    - The `GoogleDriveCLienteConfig` class is manager for the configuration
+    - The `GoogleDriveCLientConfig` class is manager for the configuration
     file of the GoogleDriveClient class
     - The class requires a `token_file_path`, a `credential_file_path` parameters
     which should be Path objects and `logger` parameter.

@@ -36,34 +36,6 @@ def setup_logger() -> logging.Logger:
     return logger_instance
 
 
-def get_specific_sql_script(sql_script_number: int) -> str:
-    """
-    Retrieves a specific SQL script from a file.
-
-    Args:
-        sql_script_number: The index of the SQL script to retrieve
-        (1-based index).
-
-    Returns:
-        The specific SQL script as a string.
-
-    Raises:
-        FileNotFoundError: If the SQL script file is not found.
-        IndexError: If the SQL script number is out of range.
-
-    """
-    script_file_path: Path = Path(__file__).parents[1] / "sql" / "billed_cost.sql"
-    try:
-        with open(script_file_path, "r") as sql_file:
-            return sql_file.read().split(";")[sql_script_number - 1]
-    except FileNotFoundError as file_not_found_error:
-        raise FileNotFoundError("SQL script file not found.") from (
-            file_not_found_error
-        )
-    except IndexError as index_error:
-        raise IndexError("SQL script number is out of range.") from index_error
-
-
 def _load_dataframe_from_file(
     read_func: Callable,
     filepath: Union[IO, Path],
