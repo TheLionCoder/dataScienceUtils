@@ -17,8 +17,8 @@ def format_axis(x: float, pos=None) -> str:
     threshold = [(1e12, "b"), (1e9, "mm"), (1e6, "m"), (1e3, "k"), (1, "na")]
     for scale, suffix in threshold:
         if x >= scale:
-            return f"${x / scale:,.0f} {suffix}"
-    return f"${x:,.0f}"
+            return f"${x / scale:,.2f} {suffix}"
+    return f"${x:,.2f}"
 
 
 
