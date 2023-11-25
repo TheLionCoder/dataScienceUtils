@@ -9,19 +9,18 @@ import matplotlib.pyplot as plt
 from typing import Any, Dict, List, Tuple
 
 
-def format_axis(x: float, pos=None) -> str:
+def format_axis(value: float, tick_position=None) -> str:
     """format currency
     The two args are the value and tick position, pos is not used,
     but it is required by matplotlib.
-    :param x: value to format.
-    :param pos: tick position.
+    :param value: value to format.
+    :param tick_position: tick position.
     :return: formatted value.
     """
-    threshold = [(1e12, "b"), (1e9, "mm"), (1e6, "m"), (1e3, "k"), (1, "na")]
-    for scale, suffix in threshold:
-        if x >= scale:
-            return f"${x / scale:,.2f} {suffix}"
-    return f"${x:,.2f}"
+    scales_and_suffixes = [(1e12, "b"), (1e9, "mm"), (1e6, "m"), (1e3, "k"), (1, "na")]
+    for scale, suffix in scales_and_suffixes:
+        return f"{value / scale:,.2f}{suffix}"
+    return f"{value:,.2f}"
 
 
 def label_bar_chart(

@@ -51,12 +51,12 @@ class GoogleDriveClientConfig:
             )
 
     @staticmethod
-    def __credentials_expired(creds: Optional[Credentials]) -> bool:
+    def _check_credentials_expire(creds: Optional[Credentials]) -> bool | None:
         """Checks if the credentials are expired"""
         return creds and creds.expired and creds.refresh_token
 
     @staticmethod
-    def __refresh_credentials(creds: Credentials) -> None:
+    def _refresh_credentials(creds: Credentials) -> None:
         """Refreshes the credentials"""
         creds.refresh(Request())
 
@@ -72,8 +72,8 @@ class GoogleDriveClientConfig:
         if creds and creds.valid:
             return creds
 
-        if creds and self.__credentials_expired(creds):
-            self.__refresh_credentials(creds)
+        if creds and self._check_credentials_expire(creds):
+            self._refresh_credentials(creds)
 
         return self.get_credentials_from_flow()
 

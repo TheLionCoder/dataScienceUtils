@@ -47,18 +47,18 @@ class GoogleDriveClient:
         return self._service
 
     @staticmethod
-    def __retrieve_file_id(url: str) -> str | None:
+    def _retrieve_file_id(url: str) -> str | None:
         """Extract the file id from a Google Drive url
         :param url: The url to extract the file id from.
         :return: The file id or None.
         """
         parsed_url: ParseResult = urlparse(url)
         path_segments: list[str] = parsed_url.path.split("/")
-        file_id: str = path_segments[3] if len(path_segments) > 3 else None
+        file_id: str | None = path_segments[3] if len(path_segments) > 3 else None
         return file_id
 
     @staticmethod
-    def __create_file_writer(download_dir: Path, file_name: str) -> io.FileIO:
+    def _create_file_writer(download_dir: Path, file_name: str) -> io.FileIO:
         """Make a file writer
         :param download_dir: The directory to download the file to.
         :param file_name: The name of the file to download.
@@ -68,7 +68,7 @@ class GoogleDriveClient:
         return io.FileIO(download_path, mode="wb")
 
     @staticmethod
-    def __send_download_request(
+    def _send_download_request(
         file_writer: io.FileIO, export_request: dict
     ) -> MediaIoBaseDownload:
         """Make a download request
@@ -103,12 +103,12 @@ class GoogleDriveClient:
         :param download_dir: The directory to download the file to.
         :param file_name: The name of the file to download.
         """
-        file_id: str = GoogleDriveClient.__retrieve_file_id(file_url)
+        file_id: str | None = GoogleDriveClient._retrieve_file_id(file_url)
         export_request = self.service.files().export_media(
             fileId=file_id, mimeType=mime_type
         )
-        file_writer = GoogleDriveClient.__create_file_writer(download_dir, file_name)
-        download_request_response = GoogleDriveClient.__send_download_request(
+        file_writer = GoogleDriveClient._create_file_writer(download_dir, file_name)
+        download_request_response = GoogleDriveClient._send_download_request(
             file_writer, export_request
         )
         self.track_download_progress(download_request_response)
@@ -121,10 +121,10 @@ class GoogleDriveClient:
         :param download_dir: The directory to download the file to.
         :param file_name: The name of the file to download.
         """
-        file_id: str = GoogleDriveClient.__retrieve_file_id(file_url)
+        file_id: str | None = GoogleDriveClient._retrieve_file_id(file_url)
         request = self.service.files().get_media(fileId=file_id)
-        file_writer = GoogleDriveClient.__create_file_writer(download_dir, file_name)
-        download_request_response = GoogleDriveClient.__send_download_request(file_writer, request)
+        file_writer = GoogleDriveClient._create_file_writer(download_dir, file_name)
+        download_request_response = GoogleDriveClient._send_download_request(file_writer, request)
         self.track_download_progress(download_request_response)
 
     def retrieve_sheet_data(
@@ -135,9 +135,9 @@ class GoogleDriveClient:
         """Reads a Google Sheet and returns the data
         :param file_sheet_url: The url of the Google Sheet to read.
         :param sheet_range: The range of the Google Sheet to read.
-        :return The data from the Google Sheet.
+        :Return The data from the Google Sheet.
         """
-        file_sheet_id: str = GoogleDriveClient.__retrieve_file_id(file_sheet_url)
+        file_sheet_id: str | None = GoogleDriveClient._retrieve_file_id(file_sheet_url)
         # Call the Sheets API
         result = (
             self._sheet_service.spreadsheets()
