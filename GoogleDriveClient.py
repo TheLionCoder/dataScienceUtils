@@ -1,5 +1,4 @@
 import io
-import logging
 from pathlib import Path
 from typing import Dict, List, Mapping
 from urllib.parse import urlparse, ParseResult
@@ -29,15 +28,13 @@ class GoogleDriveClient:
     - The `retrieve_sheet_data` method is used to read a Google Sheet and return the data.
     """
 
-    def __init__(self, config_manager, logger: logging.Logger):
+    def __init__(self, config_manager):
         """Initializes the GdriveService
         :param config_manager: A ConfigManager object.
-        :param logger: A logging.Logger object.
         """
         self._credentials = config_manager.get_credentials()
         self._service = build("drive", "v3", credentials=self._credentials)
         self._sheet_service = build("sheets", "v4", credentials=self._credentials)
-        self.logger = logger
 
     @property
     def creds(self):
@@ -59,13 +56,12 @@ class GoogleDriveClient:
         return file_id
 
     @staticmethod
-    def _create_file_writer(download_dir: Path, file_name: str) -> io.FileIO:
+    def _create_file_writer(download_path: Path) -> io.FileIO:
         """Make a file writer
-        :param download_dir: The directory to download the file to.
-        :param file_name: The name of the file to download.
+        :param download_path: The directory to download the file to.
+
         :return: A file object to write to the downloaded file.
         """
-        download_path: Path = download_dir / file_name
         return io.FileIO(download_path, mode="wb")
 
     @staticmethod
@@ -98,6 +94,20 @@ class GoogleDriveClient:
         file_metadata.update(kwargs)
         return file_metadata
 
+    @staticmethod
+    def track_download_progress(
+            downloader_instance: MediaIoBaseDownload
+    ) -> MediaIoBaseDownload:
+        """Check file download status
+        :param downloader_instance: A MediaIoBaseDownload object.
+        :return: The status of the download.
+        """
+        done: bool = False
+        status = None
+        while not done:
+            status, done = downloader_instance.next_chunk()
+        return status
+
     def _send_upload_request(
         self, file_metadata: Mapping, mimetype: str
     ) -> Dict[str, str]:
@@ -114,35 +124,16 @@ class GoogleDriveClient:
             .execute()
         )
 
-    def track_download_progress(
-        self, downloader_instance: MediaIoBaseDownload
-    ) -> MediaIoBaseDownload:
-        """Check file download status
-        :param downloader_instance: A MediaIoBaseDownload object.
-        :return: The status of the download.
-        """
-        done: bool = False
-        status = None
-        while not done:
-            status, done = downloader_instance.next_chunk()
-            if status:
-                self.logger.info(
-                    f"Download {int(status.progress() * 100)}%."
-                )
-        return status
-
     def download_file(
         self,
         file_url: str,
-        download_dir: Path,
-        file_name: str,
+        download_path: Path,
         mime_type: str = None,
         conversion: bool = False,
     ) -> None:
         """Download a file from Google Drive without a conversion
         :param file_url: The url of the file to download.
-        :param download_dir: The directory to download the file to.
-        :param file_name: The name of the file to download.
+        :param download_path: The directory to download the file to.
         :param mime_type: The mime type of the file to download. Default is None.
         see: https://developers.google.com/drive/api/guides/ref-export-formats
         :param conversion: Whether to convert the file to a different format.
@@ -156,13 +147,13 @@ class GoogleDriveClient:
                 )
             else:
                 export_request = self.service.files().get_media(fileId=file_id)
-            file_writer = GoogleDriveClient._create_file_writer(download_dir, file_name)
+            file_writer = GoogleDriveClient._create_file_writer(download_path)
             download_request_response = GoogleDriveClient._send_download_request(
                 file_writer, export_request
             )
             self.track_download_progress(download_request_response)
         except Exception as e:
-            self.logger.error(f"Error downloading file: {e}")
+            raise e
 
     def retrieve_small_file_data(self, file_url: str) -> io.BytesIO:
         file_id: str | None = GoogleDriveClient._retrieve_url_id(file_url)
@@ -209,5 +200,4 @@ class GoogleDriveClient:
         file_metadata: Mapping = GoogleDriveClient._prepare_file_metadata(
             file_name, folder_id=folder_id, **kwargs
         )
-        uploaded_file: Mapping = self._send_upload_request(file_metadata, mimetype)
-        self.logger.info(f"File ID: {uploaded_file['id']}")
+        self._send_upload_request(file_metadata, mimetype)

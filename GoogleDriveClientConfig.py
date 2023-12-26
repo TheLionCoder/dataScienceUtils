@@ -22,17 +22,15 @@ class GoogleDriveClientConfig:
 
     def __init__(
         self,
-        token_file_path: Path,
-        credential_file_path: Path,
         scope: list,
     ):
         """Constructor for the GoogleDriveClientConfig
-        :param token_file_path: Path to the token file.
-        :param credential_file_path: Path to the credential file.
         :param scope: Scope of the token.
         """
-        self.token_file_path = token_file_path
-        self.credential_file_path = credential_file_path
+        self._current_path: Path = Path(__file__).parent.absolute()
+        self._home_path: Path = self._current_path.parents[1]
+        self.token_file_path = self._home_path.joinpath("google_credentials.json")
+        self.credential_file_path = self._home_path.joinpath("google_toke.json")
         self.scope = scope
 
     def __str__(self):
