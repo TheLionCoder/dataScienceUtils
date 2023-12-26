@@ -6,12 +6,12 @@ utils
 This module contains utility functions.
 """
 import hashlib
-import io
 import logging
 import zipfile
 from pathlib import Path
-from typing import Dict, Union, IO, Callable
+from typing import Any, Dict, Union, IO, Callable, Generator
 
+import colorlog
 import pandas as pd
 from sqlalchemy.dialects.oracle import NUMBER, FLOAT
 from sqlalchemy.types import String, DATE
@@ -26,14 +26,27 @@ class EmptyDataFrameError(Exception):
 def setup_logger() -> logging.Logger:
     """
     Set up logger configuration.
+    :return: Logger instance.
     """
-    logger_instance = logging.getLogger(__name__)
-    logger_instance.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s:%(name)s:" "%(levelname)s:%(message)s")
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger_instance.addHandler(stream_handler)
-    return logger_instance
+    formatter = colorlog.ColoredFormatter(
+        "%(log_color)s %(levelname)-8s %(reset)s %(message)s",
+        datefmt=None,
+        reset=True,
+        log_colors={
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "red,bg_white",
+        },
+    )
+    logger = logging.getLogger(__name__)
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+    return logger
 
 
 def _load_dataframe_from_file(
@@ -99,22 +112,18 @@ def extract_dataframe_from_zip(
         found in the zip archive.
     """
     with zipfile.ZipFile(source_zip_path) as zip_folder:
-        if member_name not in zip_folder.namelist():
-            raise FileNotFoundError(f"File {member_name} not found in zip archive.")
-
-        with zip_folder.open(member_name) as file:
-            content = io.BytesIO(file.read())
         try:
-            return _load_dataframe_from_file(
-                read_func=read_func,
-                filepath=content,
-                **kwargs,
-            )
+            with zip_folder.open(member_name) as file:
+                return _load_dataframe_from_file(read_func, file, **kwargs)
+        except KeyError as key_error:
+            raise FileNotFoundError(
+                f"File {member_name} not found in zip archive {source_zip_path}."
+            ) from key_error
         except zipfile.BadZipFile as bad_zip_file_error:
             raise bad_zip_file_error
 
 
-def infer_sql_types(df: pd.DataFrame) -> Dict[str, type]:
+def infer_sql_types(df: pd.DataFrame) -> Dict[Any, type]:
     """
     Get the SQL data type for each column in a Pandas DataFrame.
 
@@ -182,14 +191,24 @@ def standardize_columns(df_: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame with renamed columns.
     """
-    renamed_cols: Dict[str, str] = {
-        col: col.strip().replace(" ", "_").lower() for col in df_.columns
+    renamed_cols: Dict[Any, str] = {
+        col: _format_column_name(col) for col in df_.columns
     }
     return df_.rename(columns=renamed_cols)
 
 
+def _format_column_name(col: Any) -> str:
+    """Rename a column by removing spaces from its name.
+    :param col: Column name.
+    :return: Column name without spaces."""
+    if isinstance(col, str):
+        return col.strip().replace(" ", "_").lower()
+    else:
+        return str(col)
+
+
 # add hash to files
-def read_file_chunks(file_path: Path) -> bytes:
+def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:
     """
     Read a file and yield its content in chunks
     of 4086 bytes.
@@ -204,7 +223,7 @@ def read_file_chunks(file_path: Path) -> bytes:
             yield chunk
 
 
-def compute_hash(file_content: bytes) -> str:
+def compute_hash(file_content: Generator[bytes, None, None]) -> str:
     """
     Compute SHA-256 hash.
     Args:
@@ -213,7 +232,7 @@ def compute_hash(file_content: bytes) -> str:
     Returns:
         The computed SHA-256 hash.
     """
-    hasher: hashlib.sha256 = hashlib.sha256()
+    hasher = hashlib.sha256()
     for chunk in file_content:
         hasher.update(chunk)
     return hasher.hexdigest()

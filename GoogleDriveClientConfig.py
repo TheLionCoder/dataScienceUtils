@@ -21,10 +21,10 @@ class GoogleDriveClientConfig:
     """
 
     def __init__(
-            self,
-            token_file_path: Path,
-            credential_file_path: Path,
-            scope: list,
+        self,
+        token_file_path: Path,
+        credential_file_path: Path,
+        scope: list,
     ):
         """Constructor for the GoogleDriveClientConfig
         :param token_file_path: Path to the token file.

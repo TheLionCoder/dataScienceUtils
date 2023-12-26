@@ -1,10 +1,11 @@
 import io
 import logging
 from pathlib import Path
+from typing import Dict, List, Mapping
 from urllib.parse import urlparse, ParseResult
 
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 
 class GoogleDriveClient:
@@ -47,14 +48,14 @@ class GoogleDriveClient:
         return self._service
 
     @staticmethod
-    def _retrieve_file_id(url: str) -> str | None:
+    def _retrieve_url_id(url: str) -> str:
         """Extract the file id from a Google Drive url
         :param url: The url to extract the file id from.
         :return: The file id or None.
         """
         parsed_url: ParseResult = urlparse(url)
         path_segments: list[str] = parsed_url.path.split("/")
-        file_id: str | None = path_segments[3] if len(path_segments) > 3 else None
+        file_id: str = path_segments[3]
         return file_id
 
     @staticmethod
@@ -69,7 +70,7 @@ class GoogleDriveClient:
 
     @staticmethod
     def _send_download_request(
-        file_writer: io.FileIO, export_request: dict
+        file_writer: io.FileIO | io.BytesIO, export_request: dict
     ) -> MediaIoBaseDownload:
         """Make a download request
         :param file_writer: A file object to write to the downloaded file.
@@ -78,8 +79,44 @@ class GoogleDriveClient:
         """
         return MediaIoBaseDownload(file_writer, export_request)
 
-    def track_download_progress(self, downloader_instance: MediaIoBaseDownload
-                                ) -> MediaIoBaseDownload:
+    @staticmethod
+    def _prepare_file_metadata(
+        file_name: str, *, folder_id: List[str], **kwargs
+    ) -> Dict[str, str | List[str]]:
+        """Prepare file metadata for upload file
+        :param file_name: The name of the file to upload.
+        :param mimetype: The mimetype of the file to upload.
+        :param folder_id: The id of the folder to upload the file to.
+        :param kwargs: Additional metadata to add to the file.
+        :return: A dictionary containing the file metadata.
+        """
+        file_metadata: Dict[str, str | List[str]] = {
+            "name": file_name,
+            "parents": folder_id,
+        }
+        # Update metadata dict with kwargs
+        file_metadata.update(kwargs)
+        return file_metadata
+
+    def _send_upload_request(
+        self, file_metadata: Mapping, mimetype: str
+    ) -> Dict[str, str]:
+        """Make and upload request
+        :param file_metadata: A dictionary containing the file metadata.
+        :param mimetype: The mimetype of the file to upload.
+        :return: A dictionary containing the file id.
+        """
+        media = MediaFileUpload(None, mimetype=mimetype, resumable=True)
+        return (
+            self.service()
+            .files()
+            .create(body=file_metadata, media_body=media, fields="id")
+            .execute()
+        )
+
+    def track_download_progress(
+        self, downloader_instance: MediaIoBaseDownload
+    ) -> MediaIoBaseDownload:
         """Check file download status
         :param downloader_instance: A MediaIoBaseDownload object.
         :return: The status of the download.
@@ -89,43 +126,54 @@ class GoogleDriveClient:
         while not done:
             status, done = downloader_instance.next_chunk()
             if status:
-                self.logger.info(f"\033[95mDownload {int(status.progress() * 100)}%.\033[0m")
+                self.logger.info(
+                    f"Download {int(status.progress() * 100)}%."
+                )
         return status
 
-    def fetch_file_from_google_workspace(
-        self, file_url: str, mime_type: str, download_dir: Path, file_name: str
-    ) -> None:
-        """Download a Google Workspace file from Google Drive to
-        a different format
-        :param file_url: The url of the file to download.
-        :param mime_type: The mime type of the file to download.
-        see: https://developers.google.com/drive/api/guides/ref-export-formats
-        :param download_dir: The directory to download the file to.
-        :param file_name: The name of the file to download.
-        """
-        file_id: str | None = GoogleDriveClient._retrieve_file_id(file_url)
-        export_request = self.service.files().export_media(
-            fileId=file_id, mimeType=mime_type
-        )
-        file_writer = GoogleDriveClient._create_file_writer(download_dir, file_name)
-        download_request_response = GoogleDriveClient._send_download_request(
-            file_writer, export_request
-        )
-        self.track_download_progress(download_request_response)
-
-    def download_file_without_conversion(
-        self, file_url: str, download_dir: Path, file_name: str
+    def download_file(
+        self,
+        file_url: str,
+        download_dir: Path,
+        file_name: str,
+        mime_type: str = None,
+        conversion: bool = False,
     ) -> None:
         """Download a file from Google Drive without a conversion
         :param file_url: The url of the file to download.
         :param download_dir: The directory to download the file to.
         :param file_name: The name of the file to download.
+        :param mime_type: The mime type of the file to download. Default is None.
+        see: https://developers.google.com/drive/api/guides/ref-export-formats
+        :param conversion: Whether to convert the file to a different format.
+        Default is False.
         """
-        file_id: str | None = GoogleDriveClient._retrieve_file_id(file_url)
+        try:
+            file_id: str | None = GoogleDriveClient._retrieve_url_id(file_url)
+            if conversion and mime_type:
+                export_request = self.service.files().export_media(
+                    fileId=file_id, mimeType=mime_type
+                )
+            else:
+                export_request = self.service.files().get_media(fileId=file_id)
+            file_writer = GoogleDriveClient._create_file_writer(download_dir, file_name)
+            download_request_response = GoogleDriveClient._send_download_request(
+                file_writer, export_request
+            )
+            self.track_download_progress(download_request_response)
+        except Exception as e:
+            self.logger.error(f"Error downloading file: {e}")
+
+    def retrieve_small_file_data(self, file_url: str) -> io.BytesIO:
+        file_id: str | None = GoogleDriveClient._retrieve_url_id(file_url)
         request = self.service.files().get_media(fileId=file_id)
-        file_writer = GoogleDriveClient._create_file_writer(download_dir, file_name)
-        download_request_response = GoogleDriveClient._send_download_request(file_writer, request)
-        self.track_download_progress(download_request_response)
+        file_content = io.BytesIO()
+        downloader_request_response = GoogleDriveClient._send_download_request(
+            file_content, request
+        )
+        self.track_download_progress(downloader_request_response)
+        file_content.seek(0)
+        return file_content
 
     def retrieve_sheet_data(
         self,
@@ -137,7 +185,7 @@ class GoogleDriveClient:
         :param sheet_range: The range of the Google Sheet to read.
         :Return The data from the Google Sheet.
         """
-        file_sheet_id: str | None = GoogleDriveClient._retrieve_file_id(file_sheet_url)
+        file_sheet_id: str | None = GoogleDriveClient._retrieve_url_id(file_sheet_url)
         # Call the Sheets API
         result = (
             self._sheet_service.spreadsheets()
@@ -146,3 +194,20 @@ class GoogleDriveClient:
             .execute()
         )
         return result.get("values", [])
+
+    def upload_file(
+        self, file_name: str, mimetype: str, folder_url: str, **kwargs
+    ) -> None:
+        """Upload a file to Google Drive
+        :param file_name: The name of the file to upload.
+        :param mimetype: The mimetype of the file to upload.
+        :param folder_url: The url of the folder to upload the file to.
+        :param kwargs: Additional metadata to add to the file.
+        """
+        url_id: str = GoogleDriveClient._retrieve_url_id(folder_url)
+        folder_id: List[str] = [url_id]
+        file_metadata: Mapping = GoogleDriveClient._prepare_file_metadata(
+            file_name, folder_id=folder_id, **kwargs
+        )
+        uploaded_file: Mapping = self._send_upload_request(file_metadata, mimetype)
+        self.logger.info(f"File ID: {uploaded_file['id']}")

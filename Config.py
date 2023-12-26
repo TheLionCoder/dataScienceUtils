@@ -20,6 +20,7 @@ class Config:
         _try_get_key: Tries to retrieve a value from a dictionary based on a key.
         get_property: Retrieves a property from the loaded configuration.
     """
+
     def __init__(self, config_file: Union[str, Path]):
         self.config = self._load_config(config_file)
 

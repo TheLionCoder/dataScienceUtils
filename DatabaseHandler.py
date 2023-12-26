@@ -82,7 +82,7 @@ class DatabaseHandler:
         :param table_name: Table name to operate on.
         """
         sql_command: str = "TRUNCATE TABLE {}.{}".format(self.schema, table_name)
-        self.logger.info(f"\033[91mTruncating table {table_name}...\033[0m")
+        self.logger.info(f"Truncating table {table_name}...")
 
         with self._manage_session() as session:
             session.execute(text(sql_command))
@@ -93,13 +93,13 @@ class DatabaseHandler:
         Delete records from a table in the database.
         :param delete_statement: Sqlalchemy delete statement.
         """
-        self.logger.info(f"\033[93Deleting records from table...\033[0m")
+        self.logger.info(f"Deleting records from table...")
 
         with self._manage_session() as session:
             count_deleted_records = session.execute(delete_statement)
             self.logger.info(
-                f"\033[94mDeleted {count_deleted_records.rowcount:,.0f}"
-                f" records from table.\033[0m"
+                f"Deleted {count_deleted_records.rowcount:,.0f}"
+                f" records from table."
             )
             session.commit()
 
@@ -139,6 +139,6 @@ class DatabaseHandler:
                         )
                         progress_bar.update(data_chunk.shape[0])
                 self.logger.info(
-                    f"\033[94mSuccessfully wrote {rows:,.0f} "
-                    f"rows to \033[92m{table}\033[0m."
+                    f"Successfully wrote {rows:,.0f} "
+                    f"rows to \033[92m{table}."
                 )
