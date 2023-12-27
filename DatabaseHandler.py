@@ -98,8 +98,7 @@ class DatabaseHandler:
         with self._manage_session() as session:
             count_deleted_records = session.execute(delete_statement)
             self.logger.info(
-                f"Deleted {count_deleted_records.rowcount:,.0f}"
-                f" records from table."
+                f"Deleted {count_deleted_records.rowcount:,.0f}" f" records from table."
             )
             session.commit()
 
@@ -139,6 +138,5 @@ class DatabaseHandler:
                         )
                         progress_bar.update(data_chunk.shape[0])
                 self.logger.info(
-                    f"Successfully wrote {rows:,.0f} "
-                    f"rows to \033[92m{table}."
+                    f"Successfully wrote {rows:,.0f} " f"rows to \033[92m{table}."
                 )

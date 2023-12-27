@@ -96,7 +96,7 @@ class GoogleDriveClient:
 
     @staticmethod
     def track_download_progress(
-            downloader_instance: MediaIoBaseDownload
+        downloader_instance: MediaIoBaseDownload,
     ) -> MediaIoBaseDownload:
         """Check file download status
         :param downloader_instance: A MediaIoBaseDownload object.
