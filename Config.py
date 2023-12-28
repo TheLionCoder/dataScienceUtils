@@ -1,6 +1,6 @@
 # *-* encoding: utf-8 *-*
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import yaml
 
@@ -12,37 +12,38 @@ class Config:
     Handles loading and accessing properties from YAML config files.
 
     Attributes:
-        config: The loaded configuration from the config file.
+        _current_path: The absolute path to the current directory.
+        _config_file: The absolute path to the config file.
+        _config: The loaded configuration from the config file.
 
     Methods:
         __init__: Initializes the Config object.
         _load_config: Loads the configuration from the config file.
-        _try_get_key: Tries to retrieve a value from a dictionary based on a key.
         get_property: Retrieves a property from the loaded configuration.
     """
 
-    def __init__(self, config_file: Union[str, Path]):
-        self.config = self._load_config(config_file)
+    def __init__(self):
+        self._current_path: Path = Path(__file__).parent.absolute()
+        self._config_file: Path = self._current_path.parents[1].joinpath(
+            "conf", "base", "config.yaml"
+        )
+        self._config = self._load_config()
 
-    @staticmethod
-    def _load_config(config_file: Union[str, Path]) -> dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
+        """Loads the configuration from the config file."""
         try:
-            with open(config_file, "r") as stream:
+            with open(self._config_file, "r") as stream:
                 return yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             raise ValueError(f"Error while loading config file: {exc}")
 
-    @staticmethod
-    def _try_get_key(dictionary: dict[str, Any], key: str) -> Any:
-        try:
-            return dictionary[key]
-        except KeyError:
-            raise ValueError(f"Key {key} not found in config file.")
-
     def get_property(self, *keys) -> Any:
-        value = self.config
+        """Gets a property from the loaded configuration.
+        :param keys: The keys to access the property."""
+        value = self._config
         for key in keys:
-            value = self._try_get_key(value, key)
-            if value is None:
+            try:
+                value = value[key]
+            except KeyError:
                 raise ValueError(f"Key {key} not found in config file.")
         return value
