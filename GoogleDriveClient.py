@@ -131,7 +131,7 @@ class GoogleDriveClient:
         mime_type: str = None,
         conversion: bool = False,
     ) -> None:
-        """Download a file from Google Drive without a conversion
+        """Download a file from Google Drive
         :param file_url: The url of the file to download.
         :param download_path: The directory to download the file to.
         :param mime_type: The mime type of the file to download. Default is None.
