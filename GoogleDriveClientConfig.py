@@ -21,8 +21,8 @@ class GoogleDriveClientConfig:
     """
 
     def __init__(
-            self,
-            scope: list,
+        self,
+        scope: list,
     ):
         """Constructor for the GoogleDriveClientConfig
         :param scope: Scope of the token.

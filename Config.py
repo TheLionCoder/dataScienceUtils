@@ -22,10 +22,10 @@ class Config:
         get_property: Retrieves a property from the loaded configuration.
     """
 
-    def __init__(self):
+    def __init__(self, file_name: str):
         self._current_path: Path = Path(__file__).parent.absolute()
         self._config_file: Path = self._current_path.parents[1].joinpath(
-            "conf", "base", "config.yaml"
+            "conf", "base", file_name
         )
         self._config = self._load_config()
 
