@@ -109,16 +109,17 @@ class GoogleDriveClient:
         return status
 
     def _send_upload_request(
-        self, file_metadata: Mapping, mimetype: str
+        self, file_metadata: Mapping, mimetype: str, file_path: str
     ) -> Dict[str, str]:
         """Make and upload request
         :param file_metadata: A dictionary containing the file metadata.
-        :param mimetype: The mimetype of the file to upload.
+        :param mimetype: The mimetype of the file to upload
+        :file_path: The path of the file to upload.
         :return: A dictionary containing the file id.
         """
-        media = MediaFileUpload(None, mimetype=mimetype, resumable=True)
+        media = MediaFileUpload(file_path, mimetype=mimetype, resumable=True)
         return (
-            self.service()
+            self.service
             .files()
             .create(body=file_metadata, media_body=media, fields="id")
             .execute()
@@ -173,7 +174,7 @@ class GoogleDriveClient:
     ) -> list | None:
         """Reads a Google Sheet and returns the data
         :param file_sheet_url: The url of the Google Sheet to read.
-        :param sheet_range: The range of the Google Sheet to read.
+        :param sheet_range: The range of the Google Sheet to read
         :Return The data from the Google Sheet.
         """
         file_sheet_id: str | None = GoogleDriveClient._retrieve_url_id(file_sheet_url)
@@ -187,9 +188,10 @@ class GoogleDriveClient:
         return result.get("values", [])
 
     def upload_file(
-        self, file_name: str, mimetype: str, folder_url: str, **kwargs
+        self, file_path: str, file_name: str, mimetype: str, folder_url: str, **kwargs
     ) -> None:
         """Upload a file to Google Drive
+        :param file_path: The path of the file to upload.
         :param file_name: The name of the file to upload.
         :param mimetype: The mimetype of the file to upload.
         :param folder_url: The url of the folder to upload the file to.
@@ -200,4 +202,4 @@ class GoogleDriveClient:
         file_metadata: Mapping = GoogleDriveClient._prepare_file_metadata(
             file_name, folder_id=folder_id, **kwargs
         )
-        self._send_upload_request(file_metadata, mimetype)
+        self._send_upload_request(file_metadata, mimetype, file_path)
