@@ -30,7 +30,8 @@ class GoogleDriveClientConfig:
         self._current_path: Path = Path(__file__).parent.absolute()
         self._conf_path: Path = self._current_path.parents[1].joinpath("conf", "local")
         self._token_file_path = self._conf_path.joinpath("google_token.json")
-        self._credential_file_path = self._conf_path.joinpath("google_credentials.json")
+        self._credential_file_path = self._conf_path.joinpath(
+            "google_credentials.json").as_posix()
         self._scope = scope
 
     def __str__(self):
@@ -45,7 +46,7 @@ class GoogleDriveClientConfig:
         """Gets the credentials from the token file."""
         if self._token_file_path.exists():
             return Credentials.from_authorized_user_file(
-                str(self._token_file_path), self._scope
+                self._token_file_path.as_posix(), self._scope
             )
 
     @staticmethod
@@ -78,7 +79,7 @@ class GoogleDriveClientConfig:
     def get_credentials_from_flow(self) -> Credentials:
         """Gets the credentials from the flow"""
         flow = InstalledAppFlow.from_client_secrets_file(
-            str(self._credential_file_path), self._scope
+            self._credential_file_path, self._scope
         )
         creds = flow.run_local_server(port=0)
         self.update_token_file(creds)
