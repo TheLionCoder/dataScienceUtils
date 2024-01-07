@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-import logging
 from contextlib import contextmanager
 
 import pandas as pd
@@ -30,7 +29,7 @@ class DatabaseHandler:
 
     """
 
-    def __init__(self, db_engine: Engine, schema: str, logger: logging.Logger) -> None:
+    def __init__(self, db_engine: Engine, schema: str) -> None:
         """
         Constructor for DatabaseHandler class.
         :param db_engine: SQLAlchemy engine object.
@@ -38,7 +37,6 @@ class DatabaseHandler:
         """
         self.db_engine = db_engine
         self._schema = schema
-        self.logger = logger
 
     @property
     def schema(self) -> str:
@@ -67,8 +65,6 @@ class DatabaseHandler:
         :param statement: SQL query.
         :return: List of rows.
         """
-        self.logger.info(f"Executing SQL query: \033[94m{statement}\033[0m")
-
         with self._manage_session() as session:
             result_proxy = session.execute(statement)
             column_names = result_proxy.keys()
@@ -82,24 +78,18 @@ class DatabaseHandler:
         :param table_name: Table name to operate on.
         """
         sql_command: str = "TRUNCATE TABLE {}.{}".format(self.schema, table_name)
-        self.logger.info(f"Truncating table {table_name}...")
 
         with self._manage_session() as session:
             session.execute(text(sql_command))
-        self.logger.info(f"Table {table_name} truncated.")
 
     def delete_records(self, delete_statement: Delete) -> None:
         """
         Delete records from a table in the database.
         :param delete_statement: Sqlalchemy delete statement.
         """
-        self.logger.info(f"Deleting records from table...")
 
         with self._manage_session() as session:
-            count_deleted_records = session.execute(delete_statement)
-            self.logger.info(
-                f"Deleted {count_deleted_records.rowcount:,.0f}" f" records from table."
-            )
+            session.execute(delete_statement)
             session.commit()
 
     def write_dataframe_to_db(
@@ -137,6 +127,3 @@ class DatabaseHandler:
                             **kwargs,
                         )
                         progress_bar.update(data_chunk.shape[0])
-                self.logger.info(
-                    f"Successfully wrote {rows:,.0f} " f"rows to \033[92m{table}."
-                )
