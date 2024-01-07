@@ -31,7 +31,8 @@ class GoogleDriveClientConfig:
         self._conf_path: Path = self._current_path.parents[1].joinpath("conf", "local")
         self._token_file_path = self._conf_path.joinpath("google_token.json")
         self._credential_file_path = self._conf_path.joinpath(
-            "google_credentials.json").as_posix()
+            "google_credentials.json"
+        ).as_posix()
         self._scope = scope
 
     def __str__(self):

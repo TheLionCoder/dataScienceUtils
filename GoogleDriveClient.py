@@ -119,8 +119,7 @@ class GoogleDriveClient:
         """
         media = MediaFileUpload(file_path, mimetype=mimetype, resumable=True)
         return (
-            self.service
-            .files()
+            self.service.files()
             .create(body=file_metadata, media_body=media, fields="id")
             .execute()
         )
