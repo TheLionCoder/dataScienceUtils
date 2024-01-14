@@ -50,9 +50,9 @@ def setup_logger() -> logging.Logger:
 
 
 def _load_dataframe_from_file(
-    read_func: Callable,
-    filepath: Union[IO, Path],
-    **kwargs,
+        read_func: Callable,
+        filepath: Union[IO, Path],
+        **kwargs,
 ) -> pd.DataFrame:
     """
     Extracts a Pandas DataFrame from a given input file using a
@@ -82,10 +82,10 @@ def _load_dataframe_from_file(
 
 
 def extract_dataframe_from_zip(
-    source_zip_path: Path,
-    member_name: str,
-    read_func: Callable,
-    **kwargs: object,
+        source_zip_path: Path,
+        member_name: str,
+        read_func: Callable,
+        **kwargs: object,
 ) -> pd.DataFrame:
     """
     Unzip a file from a zip archive.
@@ -207,6 +207,40 @@ def _format_column_name(col: Any) -> str:
         return str(col)
 
 
+def calculate_z_score(df: pd.DataFrame, col: str) -> pd.Series:
+    """
+    Calculate z-score or standard deviation away from the mean,
+    for a given column in a DataFrame (standardization).
+    Args:
+        df: DataFrame.
+        col: Column name.
+
+    Returns:
+        DataFrame with z-score column.
+    """
+    return df[col].transform(lambda s: (s.sub(s.mean()).div(s.std())))
+
+
+def calculate_iqr_outlier(df: pd.DataFrame, col: str) -> bool:
+    """
+    Calculate inter quantile range (IQR) for a given column in a DataFrame.
+    Args:
+        df: DataFrame.
+        col: Column name.
+
+    Returns:
+        DataFrame with IQR Outlier column.
+    """
+    q1: float = df[col].quantile(0.25)
+    q3: float = df[col].quantile(0.75)
+    iqr: float = q3 - q1
+    median: float = (q1 + q3) / 2
+    small_mask: bool = df[col] < median - iqr * 3
+    large_mask: bool = df[col] > median + iqr * 3
+    return small_mask | large_mask
+
+
+# ** Functions to add hash to files ** #
 # add hash to files
 def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:
     """
