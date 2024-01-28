@@ -29,8 +29,8 @@ def setup_logger() -> logging.Logger:
     :return: Logger instance.
     """
     formatter = colorlog.ColoredFormatter(
-        "%(log_color)s %(levelname)-8s %(reset)s %(message)s",
-        datefmt=None,
+        "%(asctime)s - %(log_color)s %(levelname)-8s %(reset)s %(message)s",
+        datefmt='%Y-%m-%d %H:%M:%S',
         reset=True,
         log_colors={
             "DEBUG": "cyan",
@@ -50,9 +50,9 @@ def setup_logger() -> logging.Logger:
 
 
 def _load_dataframe_from_file(
-        read_func: Callable,
-        filepath: Union[IO, Path],
-        **kwargs,
+    read_func: Callable,
+    filepath: Union[IO, Path],
+    **kwargs,
 ) -> pd.DataFrame:
     """
     Extracts a Pandas DataFrame from a given input file using a
@@ -82,10 +82,10 @@ def _load_dataframe_from_file(
 
 
 def extract_dataframe_from_zip(
-        source_zip_path: Path,
-        member_name: str,
-        read_func: Callable,
-        **kwargs: object,
+    source_zip_path: Path,
+    member_name: str,
+    read_func: Callable,
+    **kwargs: object,
 ) -> pd.DataFrame:
     """
     Unzip a file from a zip archive.
