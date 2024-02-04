@@ -18,7 +18,8 @@ def format_axis(value: float, tick_position=None) -> str:
     """
     scales_and_suffixes = [(1e12, "b"), (1e9, "mm"), (1e6, "m"), (1e3, "k"), (1, "na")]
     for scale, suffix in scales_and_suffixes:
-        return f"{value / scale:,.2f}{suffix}"
+        if value >= scale:
+            return f"{value / scale:,.2f}{suffix}"
     return f"{value:,.2f}"
 
 
