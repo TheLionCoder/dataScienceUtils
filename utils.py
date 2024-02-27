@@ -30,7 +30,7 @@ def setup_logger() -> logging.Logger:
     """
     formatter = colorlog.ColoredFormatter(
         "%(asctime)s - %(log_color)s %(levelname)-8s %(reset)s %(message)s",
-        datefmt='%Y-%m-%d %H:%M:%S',
+        datefmt="%Y-%m-%d %H:%M:%S",
         reset=True,
         log_colors={
             "DEBUG": "cyan",
@@ -152,11 +152,13 @@ def infer_sql_types(df: pd.DataFrame) -> Dict[Any, type]:
     }
 
 
-def get_top_n(ser: pd.Series, n: int, default: int | float | str = 0) -> pd.Series:
+def get_top_n(
+    series: pd.Series, top_n: int, default: int | float | str = "other"
+) -> pd.Series:
     """
     Args:
-        ser: A pandas Series representing the data.
-        n: An integer representing the number of top values to be returned.
+        series: A pandas Series representing the data.
+        top_n: An integer representing the number of top values to be returned.
         default: An optional parameter that specifies the default value to
         be used for elements that are not in the top n values.
 
@@ -178,8 +180,8 @@ def get_top_n(ser: pd.Series, n: int, default: int | float | str = 0) -> pd.Seri
         8    0
         dtype: int64
     """
-    top_n_values: pd.Index = ser.value_counts().nlargest(n).index
-    return ser.where(ser.isin(top_n_values), default)
+    top_n_values: pd.Series = series.value_counts()
+    return series.where(series.isin(top_n_values.index[:top_n]), default)
 
 
 def standardize_columns(df_: pd.DataFrame) -> pd.DataFrame:
@@ -207,36 +209,28 @@ def _format_column_name(col: Any) -> str:
         return str(col)
 
 
-def calculate_z_score(df: pd.DataFrame, col: str) -> pd.Series:
+def calculate_z_score(series: pd.Series) -> pd.Series:
     """
     Calculate z-score or standard deviation away from the mean,
     for a given column in a DataFrame (standardization).
-    Args:
-        df: DataFrame.
-        col: Column name.
-
-    Returns:
-        DataFrame with z-score column.
+    :param series: Series.
+    :return: Series with z-score.
     """
-    return df[col].transform(lambda s: (s.sub(s.mean()).div(s.std())))
+    return series.transform(lambda s: (s.sub(s.mean()).div(s.std())))
 
 
-def calculate_iqr_outlier(df: pd.DataFrame, col: str) -> bool:
+def calculate_iqr_outlier(series: pd.Series) -> bool:
     """
-    Calculate inter quantile range (IQR) for a given column in a DataFrame.
-    Args:
-        df: DataFrame.
-        col: Column name.
-
-    Returns:
-        DataFrame with IQR Outlier column.
+    Calculate inter-quantile range (IQR) for a given column in a DataFrame.
+    :param series: Series.
+    :return: Boolean mask.
     """
-    q1: float = df[col].quantile(0.25)
-    q3: float = df[col].quantile(0.75)
+    q1: float = series.quantile(0.25)
+    q3: float = series.quantile(0.75)
     iqr: float = q3 - q1
     median: float = (q1 + q3) / 2
-    small_mask: bool = df[col] < median - iqr * 3
-    large_mask: bool = df[col] > median + iqr * 3
+    small_mask: bool = series < median - iqr * 3
+    large_mask: bool = series > median + iqr * 3
     return small_mask | large_mask
 
 
