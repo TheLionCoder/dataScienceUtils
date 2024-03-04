@@ -5,7 +5,6 @@ utils
 -----
 This module contains utility functions.
 """
-import hashlib
 import logging
 import zipfile
 from pathlib import Path
@@ -62,7 +61,7 @@ def _load_dataframe_from_file(
         read_func: A callable object that reads the dataset
         from the input file.
         filepath: The input file from which the dataset is extracted.
-        Can be a file object or a path.
+        It Can be a file object or a path.
         **kwargs: Additional keyword arguments to be passed to the read_dataset_func.
 
     Returns:
@@ -92,15 +91,16 @@ def extract_dataframe_from_zip(
 
     Args:
         -----
-        read_func: Function to be used to read the dataset. e.g. pd.read_csv.
+        read_func: Function to be used to read the dataset.
+        E.g., pd.read_csv.
         source_zip_path: Local file path where the zip archive is located.
         member_name: Name of the file to be extracted from the
                 zip archive and converted to a Pandas DataFrame.
         Extension of the file to be extracted from the zip archive.
-                e.g., csv, xlsx.
+                E.g., csv, xlsx.
         **kwargs: Additional arguments to be passed to the
         pd.read_csv or pd.read_excel functions.
-        for more information see:
+        For more information see:
         pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
     Returns:
         -------
@@ -232,56 +232,3 @@ def calculate_iqr_outlier(series: pd.Series) -> bool:
     small_mask: bool = series < median - iqr * 3
     large_mask: bool = series > median + iqr * 3
     return small_mask | large_mask
-
-
-# ** Functions to add hash to files ** #
-# add hash to files
-def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:
-    """
-    Read a file and yield its content in chunks
-    of 4086 bytes.
-    Args:
-        file_path: file path-
-
-    Returns:
-           Bytes
-    """
-    with open(file_path, "rb") as file:
-        while chunk := file.read(4096):
-            yield chunk
-
-
-def compute_hash(file_content: Generator[bytes, None, None]) -> str:
-    """
-    Compute SHA-256 hash.
-    Args:
-        file_content: Bytes of file content.
-
-    Returns:
-        The computed SHA-256 hash.
-    """
-    hasher = hashlib.sha256()
-    for chunk in file_content:
-        hasher.update(chunk)
-    return hasher.hexdigest()
-
-
-def create_hash_file(directory_path: str, file_pattern: str) -> None:
-    """
-    Create a hash file that contains a list of files and hashes.
-    Args:
-        directory_path: Path to the directory where the files are located.
-        file_pattern: Pattern of the files to be hashed.
-    """
-    src_path: Path = Path(directory_path)
-    hash_file_name: str = "hashes.txt"
-    hash_file_path = src_path / hash_file_name
-
-    # Create a hash file that contains a list of files and hashes
-    with open(hash_file_path, "w") as hash_output:
-        for file in src_path.glob(file_pattern):
-            if file.name == hash_file_name:
-                continue
-            file_content_gen = read_file_chunks(file)
-            computed_hash = compute_hash(file_content_gen)
-            hash_output.write(f"{file.name} {computed_hash}\n")
