@@ -5,6 +5,7 @@ utils
 -----
 This module contains utility functions.
 """
+import hashlib
 import logging
 import zipfile
 from pathlib import Path
@@ -232,3 +233,33 @@ def calculate_iqr_outlier(series: pd.Series) -> bool:
     small_mask: bool = series < median - iqr * 3
     large_mask: bool = series > median + iqr * 3
     return small_mask | large_mask
+
+
+def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:
+    """
+    Read a file and yield its content in chunks
+    of 4086 bytes.
+    Args:
+        file_path: file path-
+
+    Returns:
+           Bytes
+    """
+    with open(file_path, "rb") as file:
+        while chunk := file.read(4096):
+            yield chunk
+
+
+def compute_hash(file_content: Generator[bytes, None, None]) -> str:
+    """
+    Compute Blake2b hash.
+    Args:
+        file_content: Bytes of file content.
+
+    Returns:
+        The computed SHA-256 hash.
+    """
+    hasher = hashlib.blake2b()
+    for chunk in file_content:
+        hasher.update(chunk)
+    return hasher.hexdigest()
