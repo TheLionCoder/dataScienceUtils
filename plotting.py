@@ -8,21 +8,6 @@ import matplotlib.pyplot as plt
 from typing import Any, Callable
 
 
-def format_axis(value: float, tick_position=None) -> str:
-    """format currency
-    The two args are the value and tick position, pos is not used,
-    but it is required by matplotlib.
-    :param value: value to format.
-    :param tick_position: tick position.
-    :return: formatted value.
-    """
-    scales_and_suffixes = [(1e12, "b"), (1e9, "mm"), (1e6, "m"), (1e3, "k"), (1, "na")]
-    for scale, suffix in scales_and_suffixes:
-        if value >= scale:
-            return f"{value / scale:,.2f}{suffix}"
-    return f"{value:,.2f}"
-
-
 def label_bar_chart(
     axes: plt.Axes,
     fmt: str | Callable,
@@ -80,4 +65,4 @@ def scale_number_values(value: str | int | float) -> str | int | float:
     scale_factors: list = [1e12, 1e9, 1e6, 1e3, 1]
     for scale in scale_factors:
         if numeric_value >= scale:
-            return f"{numeric_value / scale:,.1f}"
+            return f"{numeric_value / scale:,.2f}"
