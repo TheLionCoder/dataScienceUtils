@@ -250,16 +250,17 @@ def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:
             yield chunk
 
 
-def compute_hash(file_content: Generator[bytes, None, None]) -> str:
+def compute_hash(file_content: Generator[bytes, None, None], hash_name: str) -> str:
     """
     Compute Blake2b hash.
     Args:
         file_content: Bytes of file content.
+        hash_name: Hashing algorithm to use.
 
     Returns:
         The computed SHA-256 hash.
     """
-    hasher = hashlib.blake2b()
+    hasher = hashlib.new(hash_name)
     for chunk in file_content:
         hasher.update(chunk)
     return hasher.hexdigest()
