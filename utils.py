@@ -9,7 +9,7 @@ import hashlib
 import logging
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Union, IO, Callable, Generator
+from typing import Any, Dict, Union, IO, Callable, Generator, Literal
 
 import colorlog
 import pandas as pd
@@ -20,6 +20,45 @@ from sqlalchemy.types import String, DATE
 # Define empty data class error
 class EmptyDataFrameError(Exception):
     pass
+
+
+# Reader
+def read_data(
+    config: Any,
+    file_path: Path,
+    file_format: Literal["csv", "txt", "xlsx"],
+    **kwargs,
+) -> pd.DataFrame:
+    """
+    Read data from a file.
+    :param config: Config object with read functions.
+    :param file_path: File path to the dataset.
+    :param file_format: File format of the dataset.
+    :param kwargs: Additional arguments to pass to the read function
+
+    .e.g.:
+    >>> 'read_data(/some_path/some_file.csv, file_format="csv", sep="|")'
+    >>> 'read_data(/some_path/some_file.txt, file_format="txt", delimiter="|")'
+    >>> 'read_data(/some_path/some_file.xlsx, file_format="xlsx")'
+    """
+    try:
+        read_function = config.read_functions[file_format]
+        return read_function(file_path, **kwargs)
+    except KeyError:
+        raise ValueError(f"File format {file_format} not supported.")
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File {file_path} not found.")
+    except Exception as e:
+        raise ValueError(f"Error reading file {file_path}: {e}")
+
+
+def to_path(path: str | Path) -> Path:
+    """
+    Convert a string path to a Path object.
+    :param path: String path to convert.
+    :return: Path object.
+    """
+    return Path(path).expanduser() if isinstance(str) else path.expanduser()
 
 
 # Set up logger
