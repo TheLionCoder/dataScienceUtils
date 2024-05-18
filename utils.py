@@ -58,7 +58,7 @@ def to_path(path: str | Path) -> Path:
     :param path: String path to convert.
     :return: Path object.
     """
-    return Path(path).expanduser() if isinstance(str) else path.expanduser()
+    return Path(path).expanduser() if isinstance(path, str) else path.expanduser()
 
 
 # Set up logger
