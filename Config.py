@@ -4,6 +4,8 @@ from typing import Any
 
 import yaml
 
+from src.utils.utils import to_path
+
 
 class Config:
     """
@@ -12,7 +14,6 @@ class Config:
     Handles loading and accessing properties from YAML config files.
 
     Attributes:
-        _current_path: The absolute path to the current directory.
         _config_file: The absolute path to the config file.
         _config: The loaded configuration from the config file.
 
@@ -22,11 +23,8 @@ class Config:
         get_property: Retrieves a property from the loaded configuration.
     """
 
-    def __init__(self, file_name: str):
-        self._current_path: Path = Path(__file__).parent.absolute()
-        self._config_file: Path = self._current_path.parents[1].joinpath(
-            "conf", "base", file_name
-        )
+    def __init__(self, file_path: str | Path):
+        self._config_file: Path = to_path(file_path).expanduser()
         self._config = self._load_config()
 
     def _load_config(self) -> dict[str, Any]:
