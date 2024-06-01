@@ -9,23 +9,32 @@ from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 
 class GoogleDriveClient:
     """
-    - The Google Drive Client is client service for interacting with Google Drive services.
+    - The Google Drive Client is client service for interacting with
+      Google Drive services.
     - The Google Drive Client is used to download files from Google Drive.
     - The Google Drive Client is used to download Google Sheets data.
-    - The class requires a `credentials' parameter which is a Google OAuth2 credentials object, a
-    `service` parameter which is a Google Drive service object, and a `logger` parameter, which is a
+    - The class requires a `credentials' parameter which is a Google OAuth2
+      credentials object, a
+    `service` parameter which is a Google Drive service object, and a `logger`
+      parameter, which is a
     logging.Logger object.
-    - The class provides a property 'creds' which returns the Google OAuth2 credentials object and a
-    property 'service' which returns the Google Drive service object.
+    - The class provides a property 'creds' which returns the Google OAuth2
+      credentials object and a
+      property 'service' which returns the Google Drive service object.
     - The `create_file_writer` method is used to create a file writer.
     - The `send_download_request` method is used to send a download request.
-    - The `track_download_progress` method is used to track the progress of a file download.
-    - The `track_download_progress` method is used to track the progress of a file download.
-    - The `fetch_file_from_google_workspace` method is used to download a Google Workspace file from
+    - The `track_download_progress` method is used to track the progress of a
+      file download.
+    - The `track_download_progress` method is used to track the progress of a
+      file download.
+    - The `fetch_file_from_google_workspace` method is used to download a
+      Google Workspace file from
     Google Drive to a different format.
-    - The `download_file_without_conversion` method is used to download a file from Google Drive without
+    - The `download_file_without_conversion` method is used to download a file
+      from Google Drive without
     a conversion.
-    - The `retrieve_sheet_data` method is used to read a Google Sheet and return the data.
+    - The `retrieve_sheet_data` method is used to read a Google Sheet and
+      return the data.
     """
 
     def __init__(self, config_manager):
@@ -34,7 +43,8 @@ class GoogleDriveClient:
         """
         self._credentials = config_manager.get_credentials()
         self._service = build("drive", "v3", credentials=self._credentials)
-        self._sheet_service = build("sheets", "v4", credentials=self._credentials)
+        self._sheet_service = build("sheets", "v4", 
+                                    credentials=self._credentials)
 
     @property
     def creds(self):
@@ -134,7 +144,8 @@ class GoogleDriveClient:
         """Download a file from Google Drive
         :param file_url: The url of the file to download.
         :param download_path: The directory to download the file to.
-        :param mime_type: The mime type of the file to download. Default is None.
+        :param mime_type: The mime type of the file to download. Default is
+         None.
         see: https://developers.google.com/drive/api/guides/ref-export-formats
         :param conversion: Whether to convert the file to a different format.
         Default is False.
@@ -148,9 +159,10 @@ class GoogleDriveClient:
             else:
                 export_request = self.service.files().get_media(fileId=file_id)
             file_writer = GoogleDriveClient._create_file_writer(download_path)
-            download_request_response = GoogleDriveClient._send_download_request(
-                file_writer, export_request
-            )
+            download_request_response = (
+                GoogleDriveClient._send_download_request(file_writer,
+                                                         export_request)
+                )
             self.track_download_progress(download_request_response)
         except Exception as e:
             raise e
@@ -176,7 +188,8 @@ class GoogleDriveClient:
         :param sheet_range: The range of the Google Sheet to read
         :Return The data from the Google Sheet.
         """
-        file_sheet_id: str | None = GoogleDriveClient._retrieve_url_id(file_sheet_url)
+        file_sheet_id: str | None = (
+            GoogleDriveClient._retrieve_url_id(file_sheet_url))
         # Call the Sheets API
         result = (
             self._sheet_service.spreadsheets()
@@ -187,7 +200,8 @@ class GoogleDriveClient:
         return result.get("values", [])
 
     def upload_file(
-        self, file_path: str, file_name: str, mimetype: str, folder_url: str, **kwargs
+        self, file_path: str, file_name: str, mimetype: str, 
+        folder_url: str, **kwargs
     ) -> None:
         """Upload a file to Google Drive
         :param file_path: The path of the file to upload.

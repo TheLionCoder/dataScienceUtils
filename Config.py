@@ -24,7 +24,7 @@ class Config:
     """
 
     def __init__(self, file_path: str | Path):
-        self._config_file: Path = to_path(file_path).expanduser()
+        self._config_file: Path = to_path(file_path)
         self._config = self._load_config()
 
     def _load_config(self) -> dict[str, Any]:

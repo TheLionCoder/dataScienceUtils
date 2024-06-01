@@ -10,14 +10,19 @@ class GoogleDriveClientConfig:
     """
     - The `GoogleDriveCLientConfig` class is manager for the configuration
     file of the GoogleDriveClient class
-    - The class requires a `token_file_path`, a `credential_file_path` parameters
+    - The class requires a `token_file_path`, a
+      `credential_file_path` parameters
     which should be Path objects and `logger` parameter.
-    - The `retrieve_credentials` method retrieves the credentials from the token file.
+    - The `retrieve_credentials` method retrieves the credentials from the
+      token file.
     - The `_credentials_expired` method checks if the credentials are expired.
     - The `_refresh_credentials` method refreshes the credentials.
-    - The `update_token_file` method updates the token file with the new credentials.
-    - The `get_credentials` method gets the credentials from the token file or gets new ones.
-    - The `get_credentials_from_flow` method gets the credentials from the flow.
+    - The `update_token_file` method updates the token file with the
+      new credentials.
+    - The `get_credentials` method gets the credentials from the token file
+      or gets new ones.
+    - The `get_credentials_from_flow` method gets the credentials from
+    the flow.
     """
 
     def __init__(
@@ -28,7 +33,8 @@ class GoogleDriveClientConfig:
         :param scope: Scope of the token.
         """
         self._current_path: Path = Path(__file__).parent.absolute()
-        self._conf_path: Path = self._current_path.parents[1].joinpath("conf", "local")
+        self._conf_path: Path = (
+            self._current_path.parents[1].joinpath("conf", "local"))
         self._token_file_path = self._conf_path.joinpath("google_token.json")
         self._credential_file_path = self._conf_path.joinpath(
             "google_credentials.json"
