@@ -43,8 +43,7 @@ class GoogleDriveClient:
         """
         self._credentials = config_manager.get_credentials()
         self._service = build("drive", "v3", credentials=self._credentials)
-        self._sheet_service = build("sheets", "v4", 
-                                    credentials=self._credentials)
+        self._sheet_service = build("sheets", "v4", credentials=self._credentials)
 
     @property
     def creds(self):
@@ -159,10 +158,9 @@ class GoogleDriveClient:
             else:
                 export_request = self.service.files().get_media(fileId=file_id)
             file_writer = GoogleDriveClient._create_file_writer(download_path)
-            download_request_response = (
-                GoogleDriveClient._send_download_request(file_writer,
-                                                         export_request)
-                )
+            download_request_response = GoogleDriveClient._send_download_request(
+                file_writer, export_request
+            )
             self.track_download_progress(download_request_response)
         except Exception as e:
             raise e
@@ -188,8 +186,7 @@ class GoogleDriveClient:
         :param sheet_range: The range of the Google Sheet to read
         :Return The data from the Google Sheet.
         """
-        file_sheet_id: str | None = (
-            GoogleDriveClient._retrieve_url_id(file_sheet_url))
+        file_sheet_id: str | None = GoogleDriveClient._retrieve_url_id(file_sheet_url)
         # Call the Sheets API
         result = (
             self._sheet_service.spreadsheets()
@@ -200,8 +197,7 @@ class GoogleDriveClient:
         return result.get("values", [])
 
     def upload_file(
-        self, file_path: str, file_name: str, mimetype: str, 
-        folder_url: str, **kwargs
+        self, file_path: str, file_name: str, mimetype: str, folder_url: str, **kwargs
     ) -> None:
         """Upload a file to Google Drive
         :param file_path: The path of the file to upload.
