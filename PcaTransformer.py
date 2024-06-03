@@ -151,7 +151,7 @@ class PcaTransformer:
         z: str | None = "PC3",
         color_col: pl.Series | None = None,
         cmap: str = "viridis",
-        biplot: bool = True,
+        biplot: bool = False,
         biplot_scale: int = 20,
         alpha: float = 1,
         width: int = 1000,
@@ -177,6 +177,7 @@ class PcaTransformer:
         :param symbol_col: The column to use as the symbol.
         :param size_col: The column to use as the size.
         :param kwargs: Additional keyword arguments to pass to the plot method.
+        :color_bar_title: The title of the color bar.
         :return: px: The plot of the dataset in 3D.
         """
         data = self.transform(dataset)
@@ -205,37 +206,32 @@ class PcaTransformer:
 
         if biplot:
             scale = biplot_scale
-            annots = [
-                {
-                    "showarrow": False,
-                    "x": loadings["PC1"],
-                    "y": loadings["PC2"],
-                    "z": loadings["PC3"],
-                    "text": column,
-                    "xanchor": "left",
-                    "xshift": 1,
-                    "opacity": 0.7,
-                }
-                for column in dataset.columns
-                for loadings in [
-                    {
-                        f"PC{i}": val * scale
-                        for i, val in enumerate(
-                            dataset.select(pl.col(column)).to_series(), 1
-                        )
+            annots = []
+            for column in data.columns:
+                loadings = {
+                    f"PC{i}": val * scale
+                    for i, val in enumerate(
+                        data.get_column(column), 1
+                    )
                     }
-                ]
-                for new_fig in [
-                    px.line_3d(
+                new_fig = px.line_3d(
                         x=[0, loadings["PC1"]],
                         y=[0, loadings["PC2"]],
                         z=[0, loadings["PC3"]],
                         width=20,
                     )
-                ]
-                if not any(
-                    fig.add_trace(trace, row=1, col=1) for trace in new_fig["data"]
-                )
-            ]
+                for trace in new_fig["data"]:
+                    fig.add_trace(trace=trace, row=1, col=1)
+                annot = {
+                        "showarrow": False,
+                        "x": loadings["PC1"],
+                        "y": loadings["PC2"],
+                        "z": loadings["PC3"],
+                        "text": column,
+                        "xanchor": "left",
+                        "xshift": 1,
+                        "opacity": 0.7,
+                    }
+                annots.append(annot)
             fig.update_layout(scene={"annotations": annots})
         return fig
