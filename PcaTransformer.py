@@ -1,10 +1,15 @@
 # -*- encoding: utf-8 -*-
-import hvplot as hv
+from typing import Any
+
 import numpy as np
 import plotly.express as px
 import polars as pl
 import polars.selectors as cs
+
 from sklearn.decomposition import PCA
+from sklearn import set_config
+
+set_config(transform_output="polars")
 
 
 class PcaTransformer:
@@ -96,7 +101,7 @@ class PcaTransformer:
             pl.any_horizontal(cs.numeric().abs().gt(threshold))
         )
 
-    def plot_pca_variance(self, **kwargs) -> hv:
+    def plot_pca_variance(self, **kwargs) -> Any:
         """
         Plot the variance explained by each principal component.
         :param kwargs: Additional keyword arguments to pass to the plot method.
@@ -111,7 +116,7 @@ class PcaTransformer:
 
     def plot_pca_components(
         self, limit_components: int, threshold: float = 0.1, **kwargs
-    ) -> hv:
+    ) -> Any:
         """
         Plot the components of the PCA model.
         :param limit_components: The number of components to plot.
@@ -153,7 +158,9 @@ class PcaTransformer:
         height: int = 600,
         symbol_col: pl.Series | None = None,
         size_col: pl.Series | None = None,
-    ) -> px:
+        color_bar_title: str = "Color",
+        **kwargs,
+    ) -> Any:
         """
         Plot the dataset in 3D using the principal components as the x, y, and z axes.
         :param dataset: The dataset to plot.
@@ -169,12 +176,12 @@ class PcaTransformer:
         :param height: The height of the plot.
         :param symbol_col: The column to use as the symbol.
         :param size_col: The column to use as the size.
+        :param kwargs: Additional keyword arguments to pass to the plot method.
         :return: px: The plot of the dataset in 3D.
         """
+        data = self.transform(dataset)
         if color_col is not None:
-            data = self.transform(dataset).with_columns(color_col)
-        else:
-            data = dataset
+            data = data.with_columns(color_col)
 
         fig = px.scatter_3d(
             data,
@@ -183,17 +190,20 @@ class PcaTransformer:
             z=z,
             color=color_col,
             color_continuous_scale=cmap,
-            hover_data=data.columns[:10],
+            hover_data=data.columns[:3],
             symbol=symbol_col,
             size=size_col,
             opacity=alpha,
             width=width,
             height=height,
+            **kwargs,
         )
+        fig.update_coloraxes(colorbar_title=color_bar_title)
+
         if size_col is None:
             fig.update_traces(marker_size=3)
 
-        if biplot is not None:
+        if biplot:
             scale = biplot_scale
             annots = [
                 {
