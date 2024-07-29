@@ -9,10 +9,11 @@ import hashlib
 import logging
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Union, IO, Callable, Generator, Literal
+from typing import Any, Dict, List, Union, IO, Callable, Generator, Literal
 
 import colorlog
 import pandas as pd
+import polars as pl
 from sqlalchemy.dialects.oracle import NUMBER, FLOAT
 from sqlalchemy.types import String, DATE
 
@@ -58,8 +59,7 @@ def to_path(path: str | Path) -> Path:
     :param path: String path to convert.
     :return: Path object.
     """
-    return (Path(path).expanduser()
-            if isinstance(path, str) else path.expanduser())
+    return Path(path).expanduser() if isinstance(path, str) else path.expanduser()
 
 
 # Set up logger
@@ -225,54 +225,21 @@ def get_top_n(
     return series.where(series.isin(top_n_values.index[:top_n]), default)
 
 
-def standardize_columns(df_: pd.DataFrame) -> pd.DataFrame:
+def encode_categorical_features_by_frequency(dataframe: pl.DataFrame, *,
+                                             input_col: List [str] | str,
+                                             normalized: bool = True) -> pl.DataFrame:
+    """Encode Categorical Features by frequency.
+       :param dataframe: polars.DataFrame
+       :param input_col: List[str]
+       :return: polars.DataFrame
+       :raises: ValueError if input_col is not a list
+       e.g.
+         >>> encode_categorical_features(dataframe=dataframe,input_col=['column_name', 'other_column_name'])
     """
-    Rename columns in a given DataFrame.
-    Args:
-        df_: DataFrame to be processed.
-
-    Returns:
-        DataFrame with renamed columns.
-    """
-    renamed_cols: Dict[Any, str] = {
-        col: _format_column_name(col) for col in df_.columns
-    }
-    return df_.rename(columns=renamed_cols)
-
-
-def _format_column_name(col: Any) -> str:
-    """Rename a column by removing spaces from its name.
-    :param col: Column name.
-    :return: Column name without spaces."""
-    if isinstance(col, str):
-        return col.strip().replace(" ", "_").lower()
-    else:
-        return str(col)
-
-
-def calculate_z_score(series: pd.Series) -> pd.Series:
-    """
-    Calculate z-score or standard deviation away from the mean,
-    for a given column in a DataFrame (standardization).
-    :param series: Series.
-    :return: Series with z-score.
-    """
-    return series.transform(lambda s: (s.sub(s.mean()).div(s.std())))
-
-
-def calculate_iqr_outlier(series: pd.Series) -> bool:
-    """
-    Calculate inter-quantile range (IQR) for a given column in a DataFrame.
-    :param series: Series.
-    :return: Boolean mask.
-    """
-    q1: float = series.quantile(0.25)
-    q3: float = series.quantile(0.75)
-    iqr: float = q3 - q1
-    median: float = (q1 + q3) / 2
-    small_mask: bool = series < median - iqr * 3
-    large_mask: bool = series > median + iqr * 3
-    return small_mask | large_mask
+    encoded_column_name: str = f"{input_col}_ce"
+    total_rows: int = dataframe.height if normalized else 1
+    return dataframe.group_by(input_col).agg(
+        pl.len().truediv(pl.lit(total_rows)).alias(encoded_column_name))
 
 
 def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:

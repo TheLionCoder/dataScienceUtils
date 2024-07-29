@@ -17,7 +17,7 @@ class DatabaseHandler:
     - The class requires a `db_engine` parameter, which should be a SQLAlchemy
       engine object, and a `schema` parameter,
      which should be the name of the database schema.
-    - The `db_engine` and `schema` parameters are set as instance variables 
+    - The `db_engine` and `schema` parameters are set as instance variables
       in the constructor.
     - The class provides a property `schema` to access the schema name, and a
       setter method to change the value of the
@@ -53,8 +53,11 @@ class DatabaseHandler:
         return self._schema
 
     def __str__(self):
-        return (f"DatabaseHandler("f"db_engine={self.db_engine}, schema={
-                self.schema})")
+        return (
+            f"DatabaseHandler("
+            f"db_engine={self.db_engine}, schema={
+                self.schema})"
+        )
 
     @contextmanager
     def _manage_session(self):
@@ -88,8 +91,7 @@ class DatabaseHandler:
         Truncate a table in the database.
         :param table_name: Table name to operate on.
         """
-        sql_command: str = "TRUNCATE TABLE {}.{}".format(self.schema,
-                                                         table_name)
+        sql_command: str = "TRUNCATE TABLE {}.{}".format(self.schema, table_name)
 
         with self._manage_session() as session:
             session.execute(text(sql_command))
@@ -129,8 +131,7 @@ class DatabaseHandler:
                     colour="blue",
                 ) as progress_bar:
                     for chunk_start in range(0, rows, kwargs["chunksize"]):
-                        chunk_end = min(chunk_start + kwargs["chunksize"],
-                                        rows)
+                        chunk_end = min(chunk_start + kwargs["chunksize"], rows)
                         data_chunk = df.iloc[chunk_start:chunk_end]
                         data_chunk.to_sql(
                             name=table,

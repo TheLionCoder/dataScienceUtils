@@ -33,8 +33,7 @@ class GoogleDriveClientConfig:
         :param scope: Scope of the token.
         """
         self._current_path: Path = Path(__file__).parent.absolute()
-        self._conf_path: Path = (
-            self._current_path.parents[1].joinpath("conf", "local"))
+        self._conf_path: Path = self._current_path.parents[1].joinpath("conf", "local")
         self._token_file_path = self._conf_path.joinpath("google_token.json")
         self._credential_file_path = self._conf_path.joinpath(
             "google_credentials.json"
