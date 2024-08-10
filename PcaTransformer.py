@@ -210,28 +210,26 @@ class PcaTransformer:
             for column in data.columns:
                 loadings = {
                     f"PC{i}": val * scale
-                    for i, val in enumerate(
-                        data.get_column(column), 1
-                    )
-                    }
+                    for i, val in enumerate(data.get_column(column), 1)
+                }
                 new_fig = px.line_3d(
-                        x=[0, loadings["PC1"]],
-                        y=[0, loadings["PC2"]],
-                        z=[0, loadings["PC3"]],
-                        width=20,
-                    )
+                    x=[0, loadings["PC1"]],
+                    y=[0, loadings["PC2"]],
+                    z=[0, loadings["PC3"]],
+                    width=20,
+                )
                 for trace in new_fig["data"]:
                     fig.add_trace(trace=trace, row=1, col=1)
                 annot = {
-                        "showarrow": False,
-                        "x": loadings["PC1"],
-                        "y": loadings["PC2"],
-                        "z": loadings["PC3"],
-                        "text": column,
-                        "xanchor": "left",
-                        "xshift": 1,
-                        "opacity": 0.7,
-                    }
+                    "showarrow": False,
+                    "x": loadings["PC1"],
+                    "y": loadings["PC2"],
+                    "z": loadings["PC3"],
+                    "text": column,
+                    "xanchor": "left",
+                    "xshift": 1,
+                    "opacity": 0.7,
+                }
                 annots.append(annot)
             fig.update_layout(scene={"annotations": annots})
         return fig

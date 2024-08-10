@@ -5,11 +5,13 @@ utils
 -----
 This module contains utility functions.
 """
+
 import hashlib
 import logging
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List, Union, IO, Callable, Generator, Literal
+from typing import (Any, Dict, List, Union, IO, Callable, Generator, Literal,
+                    Optional)
 
 import colorlog
 import pandas as pd
@@ -22,6 +24,18 @@ from sqlalchemy.types import String, DATE
 class EmptyDataFrameError(Exception):
     pass
 
+
+def list_files(dir_path: Path,
+               file_extension: Optional[str] = None) -> List[Path]:
+    """
+    List files in a directory
+    :param dir_path: Path to the directory.
+    :param file_extension: File extension of the files to list.
+    :return: List of files in the directory.
+    """
+    assert dir_path.is_dir(), f"{dir_path} is not a directory"
+    pattern: str = f"*.{file_extension}" if file_extension else "*"
+    return list(dir_path.glob(pattern))
 
 # Reader
 def read_data(
@@ -225,21 +239,22 @@ def get_top_n(
     return series.where(series.isin(top_n_values.index[:top_n]), default)
 
 
-def encode_categorical_features_by_frequency(dataframe: pl.DataFrame, *,
-                                             input_col: List [str] | str,
-                                             normalized: bool = True) -> pl.DataFrame:
+def encode_categorical_features_by_frequency(
+    dataframe: pl.DataFrame, *, input_col: List[str] | str, normalized: bool = True
+) -> pl.DataFrame:
     """Encode Categorical Features by frequency.
-       :param dataframe: polars.DataFrame
-       :param input_col: List[str]
-       :return: polars.DataFrame
-       :raises: ValueError if input_col is not a list
-       e.g.
-         >>> encode_categorical_features(dataframe=dataframe,input_col=['column_name', 'other_column_name'])
+    :param dataframe: polars.DataFrame
+    :param input_col: List[str]
+    :return: polars.DataFrame
+    :raises: ValueError if input_col is not a list
+    e.g.
+      >>> encode_categorical_features(dataframe=dataframe,input_col=['column_name', 'other_column_name'])
     """
     encoded_column_name: str = f"{input_col}_ce"
     total_rows: int = dataframe.height if normalized else 1
     return dataframe.group_by(input_col).agg(
-        pl.len().truediv(pl.lit(total_rows)).alias(encoded_column_name))
+        pl.len().truediv(pl.lit(total_rows)).alias(encoded_column_name)
+    )
 
 
 def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:

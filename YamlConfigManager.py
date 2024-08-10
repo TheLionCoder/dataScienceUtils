@@ -4,12 +4,10 @@ from typing import Any
 
 import yaml
 
-from src.utils.utils import to_path
 
-
-class Config:
+class YamlConfigManager:
     """
-    Config class
+    YamlConfigManager class
 
     Handles loading and accessing properties from YAML config files.
 
@@ -23,8 +21,9 @@ class Config:
         get_property: Retrieves a property from the loaded configuration.
     """
 
-    def __init__(self, file_path: str | Path):
-        self._config_file: Path = to_path(file_path)
+    def __init__(self, file_path:  Path):
+        assert isinstance(file_path, Path), "file_path must be a Path object."
+        self._config_file: Path = file_path
         self._config = self._load_config()
 
     def _load_config(self) -> dict[str, Any]:

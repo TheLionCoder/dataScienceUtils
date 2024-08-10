@@ -4,6 +4,7 @@ plotting utils
 --------------
 This module contains plotting utility functions.
 """
+
 import matplotlib.pyplot as plt
 from typing import Any, Callable
 
