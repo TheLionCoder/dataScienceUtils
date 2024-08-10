@@ -21,7 +21,7 @@ class YamlConfigManager:
         get_property: Retrieves a property from the loaded configuration.
     """
 
-    def __init__(self, file_path:  Path):
+    def __init__(self, file_path: Path):
         assert isinstance(file_path, Path), "file_path must be a Path object."
         self._config_file: Path = file_path
         self._config = self._load_config()

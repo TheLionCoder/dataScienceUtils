@@ -37,11 +37,11 @@ class GoogleDriveClient:
       return the data.
     """
 
-    def __init__(self, config_manager):
+    def __init__(self, drive_config_manager):
         """Initializes the GdriveService
-        :param config_manager: A ConfigManager object.
+        :param drive_config_manager: A ConfigManager object.
         """
-        self._credentials = config_manager.get_credentials()
+        self._credentials = drive_config_manager.get_credentials()
         self._service = build("drive", "v3", credentials=self._credentials)
         self._sheet_service = build("sheets", "v4", credentials=self._credentials)
 

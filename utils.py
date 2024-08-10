@@ -10,8 +10,7 @@ import hashlib
 import logging
 import zipfile
 from pathlib import Path
-from typing import (Any, Dict, List, Union, IO, Callable, Generator, Literal,
-                    Optional)
+from typing import Any, Dict, List, Union, IO, Callable, Generator, Literal, Optional
 
 import colorlog
 import pandas as pd
@@ -25,8 +24,7 @@ class EmptyDataFrameError(Exception):
     pass
 
 
-def list_files(dir_path: Path,
-               file_extension: Optional[str] = None) -> List[Path]:
+def list_files(dir_path: Path, file_extension: Optional[str] = None) -> List[Path]:
     """
     List files in a directory
     :param dir_path: Path to the directory.
@@ -36,6 +34,7 @@ def list_files(dir_path: Path,
     assert dir_path.is_dir(), f"{dir_path} is not a directory"
     pattern: str = f"*.{file_extension}" if file_extension else "*"
     return list(dir_path.glob(pattern))
+
 
 # Reader
 def read_data(

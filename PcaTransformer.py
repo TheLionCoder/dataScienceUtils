@@ -17,7 +17,7 @@ class PcaTransformer:
     - The PcaTransformer class is a wrapper for the PCA class from the sklearn library.
     - It allows fitting and transform a dataset using PCA and provides some useful methods
     to analyze the results of the PCA.
-    -The class requires the number of components to use in the pca model.
+    - The class requires the number of components to use in the pca model.
     - The class has the following methods:
         - fit: Fit the PCA model to the dataset.
         - transform: Transform the dataset using the fitted PCA model.
@@ -176,8 +176,8 @@ class PcaTransformer:
         :param height: The height of the plot.
         :param symbol_col: The column to use as the symbol.
         :param size_col: The column to use as the size.
-        :param kwargs: Additional keyword arguments to pass to the plot method.
         :color_bar_title: The title of the color bar.
+        :param kwargs: Additional keyword arguments to pass to the plot method.
         :return: px: The plot of the dataset in 3D.
         """
         data = self.transform(dataset)

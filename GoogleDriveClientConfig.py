@@ -8,7 +8,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 class GoogleDriveClientConfig:
     """
-    - The `GoogleDriveCLientConfig` class is manager for the configuration
+    - The `GoogleDriveClientConfig` class is manager for the configuration
     file of the GoogleDriveClient class
     - The class requires a `token_file_path`, a
       `credential_file_path` parameters
@@ -27,13 +27,16 @@ class GoogleDriveClientConfig:
 
     def __init__(
         self,
+        config_dir_path: Path,
         scope: list,
     ):
         """Constructor for the GoogleDriveClientConfig
+        :param config_dir_path: Path to the configuration directory
+         where the token and credentials files are stored.
         :param scope: Scope of the token.
         """
-        self._current_path: Path = Path(__file__).parent.absolute()
-        self._conf_path: Path = self._current_path.parents[1].joinpath("conf", "local")
+        assert config_dir_path.is_dir(), "The config path should be a directory"
+        self._conf_path: Path = config_dir_path
         self._token_file_path = self._conf_path.joinpath("google_token.json")
         self._credential_file_path = self._conf_path.joinpath(
             "google_credentials.json"
@@ -43,7 +46,7 @@ class GoogleDriveClientConfig:
     def __str__(self):
         """String representation of the GoogleDriveClientConfig"""
         return (
-            f"GoogleDriveClientConfig(toke_file={self._token_file_path},"
+            f"GoogleDriveClientConfig(token_file={self._token_file_path},"
             f"credential_file={self._credential_file_path}, "
             f"scope={self._scope}"
         )
