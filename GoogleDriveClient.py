@@ -123,7 +123,8 @@ class GoogleDriveClient:
 
     def download_file(
         self,
-        download_file_path: Path, *,
+        download_file_path: Path,
+        *,
         file_id: str,
         mime_type: str = None,
     ) -> None:
