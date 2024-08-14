@@ -1,6 +1,6 @@
 import io
 from pathlib import Path
-from typing import Dict, List, Mapping
+from typing import Dict, List, Mapping, Optional
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
@@ -126,7 +126,7 @@ class GoogleDriveClient:
         download_file_path: Path,
         *,
         file_id: str,
-        mime_type: str = None,
+        mime_type: Optional[str] = None,
     ) -> None:
         """Download a file from Google Drive
         :param file_id: The id of the file to download.
