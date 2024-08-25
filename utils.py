@@ -24,16 +24,24 @@ class EmptyDataFrameError(Exception):
     pass
 
 
-def list_files(dir_path: Path, file_extension: Optional[str] = None) -> List[Path]:
+def list_files(
+    dir_path: Path,
+    ignore_substring: Optional[str] = None,
+    file_extension: Optional[str] = None,
+) -> List[Path]:
     """
     List files in a directory
     :param dir_path: Path to the directory.
     :param file_extension: File extension of the files to list.
+    :param ignore_substring: Substring to ignore in the file name.
     :return: List of files in the directory.
     """
     assert dir_path.is_dir(), f"{dir_path} is not a directory"
     pattern: str = f"*.{file_extension}" if file_extension else "*"
-    return list(dir_path.glob(pattern))
+    files: Generator[Path, None, None] = dir_path.glob(pattern)
+    if ignore_substring:
+        return [file for file in files if ignore_substring not in file.stem]
+    return list(files)
 
 
 # Reader
@@ -244,10 +252,11 @@ def encode_categorical_features_by_frequency(
     """Encode Categorical Features by frequency.
     :param dataframe: polars.DataFrame
     :param input_col: List[str]
+    :param normalized: bool
     :return: polars.DataFrame
     :raises: ValueError if input_col is not a list
     e.g.
-      >>> encode_categorical_features(dataframe=dataframe,input_col=['column_name', 'other_column_name'])
+      >>> "encode_categorical_features(dataframe=dataframe,input_col=['column_name', 'other_column_name'])"
     """
     encoded_column_name: str = f"{input_col}_ce"
     total_rows: int = dataframe.height if normalized else 1
