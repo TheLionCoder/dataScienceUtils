@@ -26,6 +26,7 @@ class EmptyDataFrameError(Exception):
 
 def list_files(
     dir_path: Path,
+    *,
     ignore_substring: Optional[str] = None,
     file_extension: Optional[str] = None,
 ) -> List[Path]:
