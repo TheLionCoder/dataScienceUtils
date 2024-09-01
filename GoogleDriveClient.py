@@ -123,26 +123,29 @@ class GoogleDriveClient:
 
     def download_file(
         self,
-        download_file_path: Path,
+        directory_path: Path,
         *,
+        file_name: str,
         file_id: str,
         mime_type: Optional[str] = None,
     ) -> None:
         """Download a file from Google Drive
+        :param directory_path: The directory to download the file to.
+        :param file_name: The name of the file to download.
         :param file_id: The id of the file to download.
-        :param download_file_path: The directory to download the file to.
         :param mime_type: The mime type of the file to download. Default is
          None.
         see: https://developers.google.com/drive/api/guides/ref-export-formats
         """
         try:
+            file_path: Path = directory_path.joinpath(file_name)
             if mime_type:
                 export_request = self.service.files().export_media(
                     fileId=file_id, mimeType=mime_type
                 )
             else:
                 export_request = self.service.files().get_media(fileId=file_id)
-            file_writer = GoogleDriveClient._create_file_writer(download_file_path)
+            file_writer = GoogleDriveClient._create_file_writer(file_path)
             download_request_response = GoogleDriveClient._send_download_request(
                 file_writer, export_request
             )
