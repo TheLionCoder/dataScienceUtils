@@ -40,9 +40,11 @@ def list_files(
     assert dir_path.is_dir(), f"{dir_path} is not a directory"
     pattern: str = f"*.{file_extension}" if file_extension else "*"
     files: Generator[Path, None, None] = dir_path.glob(pattern)
-    if ignore_substring:
-        return [file for file in files if ignore_substring not in file.stem]
-    return list(files)
+    return [
+        file
+        for file in files
+        if not ignore_substring or ignore_substring not in file.name
+    ]
 
 
 # Reader
