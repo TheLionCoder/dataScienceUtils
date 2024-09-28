@@ -29,7 +29,7 @@ def list_files(
     *,
     ignore_substring: Optional[str] = None,
     file_extension: Optional[str] = None,
-) -> List[Path]:
+) -> Generator[Path, None, None]:
     """
     List files in a directory
     :param dir_path: Path to the directory.
@@ -40,11 +40,11 @@ def list_files(
     assert dir_path.is_dir(), f"{dir_path} is not a directory"
     pattern: str = f"*.{file_extension}" if file_extension else "*"
     files: Generator[Path, None, None] = dir_path.glob(pattern)
-    return [
+    return (
         file
         for file in files
         if not ignore_substring or ignore_substring not in file.name
-    ]
+    )
 
 
 # Reader
