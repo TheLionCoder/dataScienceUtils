@@ -5,9 +5,6 @@ import pandas as pd
 from sqlalchemy import Engine, text, Delete, Select
 from tqdm import tqdm
 
-# local imports
-from .utils import infer_sql_types
-
 
 class DatabaseHandler:
     """
@@ -120,7 +117,6 @@ class DatabaseHandler:
         with self._manage_session() as session:
             for df in dataframes:
                 rows: int = df.shape[0]
-                column_sql_types: dict = infer_sql_types(df)
                 # Load data in chunks
                 with tqdm(
                     total=rows,
@@ -137,7 +133,6 @@ class DatabaseHandler:
                             name=table,
                             con=session,
                             schema=self.schema,
-                            dtype=column_sql_types,
                             **kwargs,
                         )
                         progress_bar.update(data_chunk.shape[0])
