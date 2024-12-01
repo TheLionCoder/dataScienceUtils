@@ -8,9 +8,8 @@ This module contains utility functions.
 
 import hashlib
 from pathlib import Path
-from typing import List, Generator
+from typing import Generator
 
-import polars as pl
 
 def read_file_chunks(file_path: Path) -> Generator[bytes, None, None]:
     """
