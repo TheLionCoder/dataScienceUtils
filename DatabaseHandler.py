@@ -50,11 +50,7 @@ class DatabaseHandler:
         return self._schema
 
     def __str__(self):
-        return (
-            f"DatabaseHandler("
-            f"db_engine={self.db_engine}, schema={
-                self.schema})"
-        )
+        return f"DatabaseHandler(db_engine={self.db_engine}, schema={self.schema})"
 
     @contextmanager
     def _manage_session(self):
